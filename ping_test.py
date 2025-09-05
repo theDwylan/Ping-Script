@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#Dylan Aguirre, 9/5/25
 import subprocess
 import os
 import time
@@ -39,9 +40,10 @@ def main():
             case 2: #Test local connectivity
                 print()
             case 3: #Test remote connectivity
+                subprocess.run(args="ping 129.21.3.17")
                 print()
             case 4: #Test DNS resolution
-                output = subprocess.run(args= "ping www.google.com")
+                subprocess.run(args="ping www.google.com")
                 print()
             case 5: #Quit
                 print("Quitting...")
