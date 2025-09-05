@@ -4,10 +4,10 @@ import subprocess
 import os
 import time
 
-def user_Input():
+def user_Input(): #Basic input checking
     try:
         userInput = input("> ")
-        if(user_Input == "^C"):
+        if(user_Input == "^C"): #Allows KeyboardInterrupt
             raise KeyboardInterrupt
         userInput = int(userInput)
     except:
@@ -19,10 +19,10 @@ def retrieve_Gateway(): #Get default gateway. Assumes rocky linux
     output = subprocess.run("ip r",capture_output=True).stdout.decode().split()
     return output[2]
 
-def ping_out(ip:str):
-    if(os.name == "nt"):
+def ping_out(ip:str): #Checks for operating system type and prints returncode result
+    if(os.name == "nt"): #Windows
         output = subprocess.run("ping "+str(ip),capture_output=True)
-    else:
+    else: #Linux/MacOS
         output = subprocess.run("ping -c 4 "+str(ip),capture_output=True)
     if(output.returncode == 0):
         print("Successful ping!")
