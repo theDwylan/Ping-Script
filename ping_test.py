@@ -6,9 +6,10 @@ import time
 
 def user_Input():
     try:
-        userInput = int(input("> "))
-    except (KeyboardInterrupt):
-        return KeyboardInterrupt
+        userInput = input("> ")
+        if(user_Input == "^C"):
+            raise KeyboardInterrupt
+        userInput = int(userInput)
     except:
         print("Error! Invalid command!")
 
@@ -18,6 +19,15 @@ def retrieve_Gateway(): #Get default gateway. Assumes rocky linux
     output = subprocess.run("ip r",capture_output=True).stdout.decode().split()
     return output[2]
 
+def ping_out(ip:str):
+    if(os.name == "nt"):
+        output = subprocess.run("ping "+str(ip),capture_output=True)
+    else:
+        output = subprocess.run("ping -c 4 "+str(ip),capture_output=True)
+    if(output.returncode == 0):
+        print("Successful ping!")
+    else:
+        print("Ping failure!")
 
 def main():
     #Clear terminal
@@ -38,12 +48,11 @@ def main():
             case 1: #Display the default gateway
                 print(retrieve_Gateway())
             case 2: #Test local connectivity
-                gateway = retrieve_Gateway()
-                subprocess.run("ping "+str(gateway))
+                ping_out(retrieve_Gateway())
             case 3: #Test remote connectivity
-                subprocess.run(args="ping 129.21.3.17")
+                ping_out("129.21.3.17")
             case 4: #Test DNS resolution
-                subprocess.run(args="ping www.google.com")
+                ping_out("www.google.com")
             case 5: #Quit
                 print("Quitting...")
                 break
@@ -52,6 +61,5 @@ def main():
         print()
         time.sleep(1)
         
-
 
 main()
