@@ -38,18 +38,18 @@ def main():
             case 1: #Display the default gateway
                 print(retrieve_Gateway())
             case 2: #Test local connectivity
-                print()
+                gateway = retrieve_Gateway()
+                subprocess.run("ping "+str(gateway))
             case 3: #Test remote connectivity
                 subprocess.run(args="ping 129.21.3.17")
-                print()
             case 4: #Test DNS resolution
                 subprocess.run(args="ping www.google.com")
-                print()
             case 5: #Quit
                 print("Quitting...")
                 break
             case __: #Check for bad command
                 print("Command not recognized!")
+        print()
         time.sleep(1)
         
 
