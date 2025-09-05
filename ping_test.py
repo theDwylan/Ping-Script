@@ -22,7 +22,7 @@ def retrieve_Gateway(): #Get default gateway. Assumes rocky linux
 def ping_out(ip:str): #Checks for operating system type and prints returncode result
     if(os.name == "nt"): #Windows
         output = subprocess.run("ping "+str(ip),capture_output=True)
-    else: #Linux/MacOS
+    else: #Linux/Mac
         output = subprocess.run("ping -c 4 "+str(ip),capture_output=True)
     if(output.returncode == 0):
         print("Successful ping!")
