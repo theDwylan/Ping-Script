@@ -7,9 +7,9 @@ import time
 def user_Input(): #Basic input checking
     try:
         userInput = input("> ")
-        if(user_Input == "^C"): #Allows KeyboardInterrupt
-            raise KeyboardInterrupt
         userInput = int(userInput)
+    except(KeyboardInterrupt):
+        raise KeyboardInterrupt
     except:
         print("Error! Invalid command!")
 
