@@ -3,6 +3,7 @@
 import subprocess
 import os
 import time
+import netifaces
 
 def user_Input(): #Basic input checking
     try:
@@ -15,9 +16,10 @@ def user_Input(): #Basic input checking
 
     return userInput
 
-def retrieve_Gateway(): #Get default gateway. Assumes rocky linux
-    output = subprocess.run("ip r",capture_output=True).stdout.decode().split()
-    return output[2]
+def retrieve_Gateway():
+    return str(netifaces.gateways()["default"][2][0])
+    # output = subprocess.run("ip r",capture_output=True).stdout.decode().split()
+    # return output[2]
 
 def ping_out(ip:str): #Checks for operating system type and prints returncode result
     if(os.name == "nt"): #Windows
@@ -58,8 +60,7 @@ def main():
                 break
             case __: #Check for bad command
                 print("Command not recognized!")
-        print()
-        time.sleep(1)
-        
+        input("\nPress enter to continue... ")
+
 
 main()
