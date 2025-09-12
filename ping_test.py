@@ -9,12 +9,12 @@ def user_Input(): #Basic input checking
     try:
         userInput = input("> ")
         userInput = int(userInput)
+        return userInput
     except(KeyboardInterrupt):
         raise KeyboardInterrupt
     except:
         print("Error! Invalid command!")
-
-    return userInput
+        raise SyntaxError
 
 def retrieve_Gateway():
     return str(netifaces.gateways()["default"][2][0])
@@ -46,20 +46,19 @@ def main():
         #Input checking
         userInput = user_Input()
 
-        match userInput:
-            case 1: #Display the default gateway
-                print(retrieve_Gateway())
-            case 2: #Test local connectivity
-                ping_out(retrieve_Gateway())
-            case 3: #Test remote connectivity
-                ping_out("129.21.3.17")
-            case 4: #Test DNS resolution
-                ping_out("www.google.com")
-            case 5: #Quit
-                print("Quitting...")
-                break
-            case __: #Check for bad command
-                print("Command not recognized!")
+        if user_Input == 1: #Display the default gateway
+            print(retrieve_Gateway())
+        elif user_Input == 2: #Test local connectivity
+            ping_out(retrieve_Gateway())
+        elif user_Input == 3: #Test remote connectivity
+            ping_out("129.21.3.17")
+        elif user_Input == 4: #Test DNS resolution
+            ping_out("www.google.com")
+        elif user_Input == 5: #Quit
+            print("Quitting...")
+            break
+        else: #Check for bad command
+            print("Command not recognized!")
         input("\nPress enter to continue... ")
 
 
