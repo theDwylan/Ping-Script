@@ -3,6 +3,7 @@
 import subprocess
 import os
 import time
+#Extra module needed. pip install netifaces
 import netifaces
 
 def user_Input(): #Basic input checking
@@ -46,15 +47,15 @@ def main():
         #Input checking
         userInput = user_Input()
 
-        if user_Input == 1: #Display the default gateway
+        if userInput == 1: #Display the default gateway
             print(retrieve_Gateway())
-        elif user_Input == 2: #Test local connectivity
+        elif userInput == 2: #Test local connectivity
             ping_out(retrieve_Gateway())
-        elif user_Input == 3: #Test remote connectivity
+        elif userInput == 3: #Test remote connectivity
             ping_out("129.21.3.17")
-        elif user_Input == 4: #Test DNS resolution
+        elif userInput == 4: #Test DNS resolution
             ping_out("www.google.com")
-        elif user_Input == 5: #Quit
+        elif userInput == 5: #Quit
             print("Quitting...")
             break
         else: #Check for bad command
