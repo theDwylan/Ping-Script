@@ -1,5 +1,7 @@
 import socket as Socket
+import time
 
+WAITTIME = 0.001
 PORT = 1234
 HOST = "127.0.0.1"
 
@@ -26,8 +28,11 @@ def main():
                 tcpSock.connect((HOST,PORT))
                 tcpSock.send(b"")
                 tcpSock.close()
+                time.sleep(WAITTIME)
             else: #Udp connect
                 udpSock.sendto(b"",(HOST,PORT))
+                time.sleep(WAITTIME)
+        time.sleep(0.5)
         udpSock.sendto(b"END",(HOST,PORT))
 
 
