@@ -36,16 +36,18 @@ def decode(BinaryList): #Convert the collected binary list into a string
     message = ""
     return message
 
+def build_socket(sockType):
+    serverSock = Socket.socket(Socket.AF_INET,sockType)
+    serverSock.setsockopt(Socket.SOL_SOCKET,Socket.SO_REUSEADDR,1)
+    serverSock.bind(("0.0.0.0",1234))
+    return serverSock
+
 
 def main():
-    serverSocketTCP = Socket.socket(Socket.AF_INET,Socket.SOCK_STREAM)
-    serverSocketTCP.setsockopt(Socket.SOL_SOCKET,Socket.SO_REUSEADDR,1)
-    serverSocketTCP.bind(("0.0.0.0",1234))
+    serverSocketTCP = build_socket(Socket.SOCK_STREAM)
     serverSocketTCP.listen(5)
 
-    serverSocketUDP = Socket.socket(Socket.AF_INET,Socket.SOCK_DGRAM)
-    serverSocketUDP.setsockopt(Socket.SOL_SOCKET,Socket.SO_REUSEADDR,1)
-    serverSocketUDP.bind(("0.0.0.0",1234))
+    serverSocketUDP = build_socket(Socket.SOCK_DGRAM)
 
     while True:
         BinaryList = list()
