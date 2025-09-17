@@ -33,7 +33,13 @@ def handle_TCP(TCPsock,BinaryHolder):
         clientSock.close()
 
 def decode(BinaryList): #Convert the collected binary list into a string
+    bitSet = ""
     message = ""
+    for i in range(0,len(BinaryList)-1):
+        if i % 8 == 0:
+            message += chr(int(bitSet,2))
+        else:
+            bitSet += str(BinaryList[i])
     return message
 
 def build_socket(sockType):
