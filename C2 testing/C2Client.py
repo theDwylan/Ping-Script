@@ -55,7 +55,6 @@ def handle_traffic(instructions:str):
 
 
 def main():
-    udpSock = build_socket(Socket.SOCK_DGRAM)
     toSend = ""
 
     while True:
