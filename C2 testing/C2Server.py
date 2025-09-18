@@ -1,4 +1,5 @@
 import socket as Socket
+from socket import socket
 import threading
 
 #TODO look into multiple sources. Convert main binary list to dict with ip/binary pairs?
@@ -10,7 +11,7 @@ HOSTDICT = dict()
 PORT = 1234
 HOST = "127.0.0.1"
 
-def handle_UDP(UDPsock,BinaryHolder:list):
+def handle_UDP(UDPsock:socket,BinaryHolder:list):
     global EOF
     global LOCK
     while not EOF:
@@ -28,7 +29,7 @@ def handle_UDP(UDPsock,BinaryHolder:list):
             break
 
 
-def handle_TCP(TCPsock,BinaryHolder:list):
+def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
     global EOF
     global LOCK
     while not EOF: #Main loop
@@ -43,9 +44,16 @@ def handle_TCP(TCPsock,BinaryHolder:list):
         LOCK.release()
 
     #Final return command
-    clientSock, clientAddr = TCPsock.accept()
-    clientSock.send(send_client_list(clientSock)).encode()
+    while True:
+        try:
+            clientSock, clientAddr = TCPsock.accept()
+            break
+        except Socket.timeout:
+            continue
+    clientSock.send(send_client_list(clientAddr).encode())
     clientSock.close()
+    senderIp.append(clientAddr[0])
+
 
 
 
@@ -59,20 +67,20 @@ def decode(BinaryList:list): #Convert the collected binary list into a string
     return message
 
 
-def recv_client_list(clientAddr):
+def recv_client_list(clientAddr:tuple):
     global LISTLOCK
     global HOSTDICT
     if clientAddr not in HOSTDICT.keys():
         LISTLOCK.acquire()
-        HOSTDICT[clientAddr] = []
+        HOSTDICT[clientAddr] = list()
         LISTLOCK.release()
 
 
-def send_client_list(clientAddr):
+def send_client_list(clientAddr:tuple) -> str: #Fetch queued commands and return
     global LISTLOCK
     global HOSTDICT
     with LISTLOCK:
-        if len(HOSTDICT[clientAddr]) == 0:
+        if len(HOSTDICT.get(clientAddr, [])) == 0: # type: ignore
             return "SLP"
         else:
             return HOSTDICT[clientAddr].pop(0)
@@ -86,28 +94,29 @@ def build_socket(sockType, host:str, port:int):
     return serverSock
 
 
-def receive_traffic(serverSocketUDP,serverSocketTCP) -> str:
+def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket) -> str:
     BinaryList = []
+    senderIp = []
     EOF = False
 
     #This is receiving data
     udp_Thread = threading.Thread(target=handle_UDP,args=(serverSocketUDP,BinaryList)) #Handles ones
-    tcp_Thread = threading.Thread(target=handle_TCP,args=(serverSocketTCP,BinaryList)) #Handles zeros
+    tcp_Thread = threading.Thread(target=handle_TCP,args=(serverSocketTCP,BinaryList,senderIp)) #Handles zeros
     threads = [udp_Thread,tcp_Thread]
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
     output = decode(BinaryList)
-    print(output) #Prints what the client sent discretely
+    print(senderIp[0]+": "+output) #Prints what the client sent discretely
     return output
 
 
 def main():
     global EOF
+
     serverSocketTCP = build_socket(Socket.SOCK_STREAM,HOST,PORT)
     serverSocketTCP.listen(5)
-
     serverSocketUDP = build_socket(Socket.SOCK_DGRAM,HOST,PORT)
 
     while True:
