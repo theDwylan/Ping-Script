@@ -140,7 +140,7 @@ def display_options():
     ipList.sort() #Sort for consistent display
     optionNum = 0
     for ip in ipList:
-        print(str(optionNum+1)+": ") #One is added for user's sake
+        print(str(optionNum+1)+": "+ip) #One is added for user's sake
         optionNum += 1
     print(str(optionNum+1)+": refresh")
     userChoice = int(input("Select option: ").strip())-1 #Adjusted for 0th index
