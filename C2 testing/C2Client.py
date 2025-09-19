@@ -24,6 +24,7 @@ def convert_to_binary(toSend:str):
 
 #Primary traffic conversion and send
 def send_traffic(message:str):
+    print("Sending: "+message)
     udpSock = build_socket(Socket.SOCK_DGRAM)
 
     binaryToSend = convert_to_binary(message)
@@ -67,7 +68,8 @@ def main():
 
     while True:
         send_traffic(toSend) #Comes first to start exchanges
-        toSend = handle_traffic(recv_traffic()) #Builds return message to server
+        message = recv_traffic()
+        toSend = handle_traffic(message) #Builds return message to server
 
 
 main()

