@@ -104,7 +104,9 @@ def main():
     output = format_output(networkInfo,OSInfo,hardwareInfo)
     print(output)
     #Write to file
+    home = os.path.expanduser("~")
     filename = networkInfo[0]+"_system_report.log"
+    filename = os.path.join(home, filename)
     with open(filename,"w") as logFile:
         logFile.write(output)
 
