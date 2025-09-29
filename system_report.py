@@ -5,9 +5,18 @@ import netifaces
 import socket
 import os
 import subprocess
+import platform
 import dns.resolver
+from datetime import date
+import calendar
 
-def get_network_info(networkInfo:list):
+def make_date_line()->str:
+    properDateFormat = ""
+    dateInfoTokens = str(date.today()).split("-")
+    properDateFormat = str(calendar.month_name[int(dateInfoTokens[1])])+" "+dateInfoTokens[2]+", "+dateInfoTokens[0]
+    return properDateFormat
+
+def get_network_info(networkInfo:list) -> None:
 
     fqdnTokens = socket.getfqdn().split(".") #Gets hostname and domain suffix
     networkInfo[0] = fqdnTokens[0]
@@ -25,16 +34,18 @@ def get_network_info(networkInfo:list):
     networkInfo[6] = DNSservers[1]
 
 
-def get_os_info(OSInfo:list):
-    pass
+def get_os_info(OSInfo:list) -> None:
+    OSInfo[0] = platform.system()
+    OSInfo[1] = platform.version()
+    OSInfo[2] = platform.release()
 
-def get_hardware_info(hardwareInfo:list):
+def get_hardware_info(hardwareInfo:list) -> None:
     pass
 
 def main():
     #Clear terminal
     os.system('cls' if os.name == 'nt' else 'clear')
-    #Print date
+    dateLine = make_date_line()
 
 
     networkInfo = [""] * 7 #[Hostname ,Domain suffix, ipv4 address, gateway, netmask, Primary dns, secondary dns]
