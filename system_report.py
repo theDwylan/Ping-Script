@@ -39,17 +39,52 @@ def get_hardware_info(hardwareInfo:list) -> None:
     totalDisk, usedDisk, freeDisk = shutil.disk_usage("/")
     hardwareInfo[0] = str(round(totalDisk / (1024**3)))+" GB"
     hardwareInfo[1] = str(round(freeDisk / (1024**3)))+" GB"
+    hardwareInfo[2] = str(round((totalDisk-freeDisk) / (1024**3)))+" GB"
 
-    hardwareInfo[2] = platform.processor().split(",")[0]
-    hardwareInfo[3] = psutil.cpu_count(logical=True)
-    hardwareInfo[4] = psutil.cpu_count(logical=False)
+    hardwareInfo[3] = platform.processor().split(",")[0]
+    hardwareInfo[4] = psutil.cpu_count(logical=True)
+    hardwareInfo[5] = psutil.cpu_count(logical=False)
 
     ramMemory = psutil.virtual_memory()
-    hardwareInfo[5] = round(ramMemory.total / (1024**3))
-    hardwareInfo[6] = round(ramMemory.available / (1024**3))
+    hardwareInfo[6] = round(ramMemory.total / (1024**3))
+    hardwareInfo[7] = round(ramMemory.available / (1024**3))
 
-    print(hardwareInfo)
 
+def format_output(dateLine:str,networkInfo:list,OSInfo:list,hardwareInfo:list) -> str:
+    spacingSize = int(30)
+    return f"""
+System Report - {dateLine}
+
+Device Information
+{"Hostname:":{spacingSize}}{networkInfo[0]}
+{"Gateway:":{spacingSize}}{networkInfo[1]}
+
+Network Information
+{"IP address:":{spacingSize}}{networkInfo[2]}
+{"Gateway:":{spacingSize}}{networkInfo[3]}
+{"Netmask:":{spacingSize}}{networkInfo[4]}
+{"DNS1:":{spacingSize}}{networkInfo[5]}
+{"DNS2:":{spacingSize}}{networkInfo[6]}
+
+Operating System Information
+{"Operating System:":{spacingSize}}{OSInfo[0]}
+{"OS Version:":{spacingSize}}{OSInfo[1]}
+{"Kernel Version:":{spacingSize}}{OSInfo[2]}
+
+Storage Information
+{"System Drive Total:":{spacingSize}}{hardwareInfo[0]}
+{"System Drive Used:":{spacingSize}}{hardwareInfo[2]}
+{"System Drive Free:":{spacingSize}}{hardwareInfo[1]}
+
+Processor Information
+{"CPU Model:":{spacingSize}}{hardwareInfo[3]}
+{"Number of Processors:":{spacingSize}}{hardwareInfo[4]}
+{"Number of Cores:":{spacingSize}}{hardwareInfo[5]}
+
+Memory Information
+{"Total RAM:":{spacingSize}}{hardwareInfo[6]}
+{"Available RAM:":{spacingSize}}{hardwareInfo[7]}
+"""
 
 def main():
     #Clear terminal
@@ -60,9 +95,11 @@ def main():
     get_network_info(networkInfo)
     OSInfo = [""] * 3 #[OSName, OSVersion, kernalVersion]
     get_os_info(OSInfo)
-    hardwareInfo = [""] * 7 #[diskSize, diskSpace, CPUModel, CPUNumber, CPUCoreCount, totalRAM, availableRAM]
+    hardwareInfo = [""] * 8 #[diskSize, diskSpace, diskUsed, CPUModel, CPUNumber, CPUCoreCount, totalRAM, availableRAM]
     get_hardware_info(hardwareInfo)
 
+    output = format_output(dateLine,networkInfo,OSInfo,hardwareInfo)
+    print(output)
     #Write to file
 
 main()
