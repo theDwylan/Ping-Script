@@ -57,8 +57,7 @@ def get_hardware_info(hardwareInfo:list) -> None:
 
 def format_output(networkInfo:list,OSInfo:list,hardwareInfo:list) -> str:
     spacingSize = int(30)
-    return f"""
-System Report - {make_date_line()}
+    return f"""System Report - {make_date_line()}
 
 Device Information
 {"Hostname:":{spacingSize}}{networkInfo[0]}
@@ -105,5 +104,9 @@ def main():
     output = format_output(networkInfo,OSInfo,hardwareInfo)
     print(output)
     #Write to file
+    filename = networkInfo[0]+"_system_report.log"
+    with open(filename,"w") as logFile:
+        logFile.write(output)
+
 
 main()
