@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 #Dylan Aguirre, 9/29/25
 
-import netifaces
-import socket
-import os
-import subprocess
-import platform
-import dns.resolver
+import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil
 from datetime import date
-import calendar
 
 def make_date_line()->str:
     properDateFormat = ""
     dateInfoTokens = str(date.today()).split("-")
     properDateFormat = str(calendar.month_name[int(dateInfoTokens[1])])+" "+dateInfoTokens[2]+", "+dateInfoTokens[0]
     return properDateFormat
+
 
 def get_network_info(networkInfo:list) -> None:
 
@@ -39,14 +34,27 @@ def get_os_info(OSInfo:list) -> None:
     OSInfo[1] = platform.version()
     OSInfo[2] = platform.release()
 
+
 def get_hardware_info(hardwareInfo:list) -> None:
-    pass
+    totalDisk, usedDisk, freeDisk = shutil.disk_usage("/")
+    hardwareInfo[0] = str(round(totalDisk / (1024**3)))+" GB"
+    hardwareInfo[1] = str(round(freeDisk / (1024**3)))+" GB"
+
+    hardwareInfo[2] = platform.processor().split(",")[0]
+    hardwareInfo[3] = psutil.cpu_count(logical=True)
+    hardwareInfo[4] = psutil.cpu_count(logical=False)
+
+    ramMemory = psutil.virtual_memory()
+    hardwareInfo[5] = round(ramMemory.total / (1024**3))
+    hardwareInfo[6] = round(ramMemory.available / (1024**3))
+
+    print(hardwareInfo)
+
 
 def main():
     #Clear terminal
     os.system('cls' if os.name == 'nt' else 'clear')
     dateLine = make_date_line()
-
 
     networkInfo = [""] * 7 #[Hostname ,Domain suffix, ipv4 address, gateway, netmask, Primary dns, secondary dns]
     get_network_info(networkInfo)
