@@ -15,7 +15,7 @@ HOST = "127.0.0.1"
 
 
 #Thread function
-def handle_UDP(UDPsock:socket,BinaryHolder:list):
+def handle_UDP(UDPsock:socket,BinaryHolder:list): #TODO update BinaryHolder handler
     global EOF
     EOF = False
     global LOCK
@@ -35,7 +35,7 @@ def handle_UDP(UDPsock:socket,BinaryHolder:list):
 
 
 #Thread function
-def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list):
+def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list): #TODO update BinaryHolder handler
     global EOF
     global LOCK
     while not EOF: #Main loop
@@ -74,7 +74,7 @@ def decode(BinaryList:list):
 
 
 #Determines state of client
-def recv_client_list(clientAddr):
+def recv_client_list(clientAddr): #Multi-threaded
     global LISTLOCK
     global HOSTDICT
     if clientAddr not in HOSTDICT.keys(): #Checks if a client is a known host
@@ -84,7 +84,7 @@ def recv_client_list(clientAddr):
 
 
 #Fetch queued commands and return
-def send_client_list(clientAddr) -> str: 
+def send_client_list(clientAddr) -> str: #Multi-threaded
     global LISTLOCK
     global HOSTDICT
     with LISTLOCK:
@@ -105,8 +105,8 @@ def build_socket(sockType, host:str, port:int) -> socket:
 
 #Main incoming traffic handler
 def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
-    BinaryList = [] #holds all incoming binary
-    senderIp = [] #holds the ip of message sender
+    BinaryList = [] #holds all incoming binary TODO make into dict with [ip(str),log(str)]
+    senderIp = [] #holds the ip of message sender TODO check if obsolete?
     EOF = False
 
     #This is receiving data
@@ -119,7 +119,7 @@ def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
     for thread in threads:
         thread.join()
 
-    output = decode(BinaryList) 
+    output = decode(BinaryList) #TODO make multi host friendly
     if output != "":
         print(senderIp[0]+": "+output)
 
