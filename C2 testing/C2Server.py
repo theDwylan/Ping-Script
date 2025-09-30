@@ -4,7 +4,6 @@ import threading
 import time
 
 #TODO look into multiple sources. Convert main binary list to dict with ip/binary pairs?
-#TODO Fix error with client unable to send after first message.
 
 EOF = False
 LOCK = threading.Lock()
@@ -17,6 +16,7 @@ HOST = "127.0.0.1"
 #Thread function
 def handle_UDP(UDPsock:socket,BinaryHolder:list):
     global EOF
+    EOF = False
     global LOCK
     while not EOF:
         try:
