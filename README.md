@@ -1,1 +1,2 @@
-# Ping-Script
+# Script Library
+just some scripts for various uses
