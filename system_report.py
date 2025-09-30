@@ -13,22 +13,22 @@ def make_date_line()->str: #Assembles a clean formatted string
 
 def get_network_info(networkInfo:list) -> None:
     #Gets hostname and domain suffix
-    fqdnTokens = socket.getfqdn().split(".") 
-    networkInfo[0] = fqdnTokens[0]
-    for i in range(1,len(fqdnTokens)-1):
+    fqdnTokens = socket.getfqdn().split(".")
+    networkInfo[0] = fqdnTokens[0] #Host name
+    for i in range(1,len(fqdnTokens)-1): #Rebuilds domain suffix
         networkInfo[1] += fqdnTokens[i]+"."
     networkInfo[1] = networkInfo[1][0:len(networkInfo[1])-1] #Removes extra "."
 
     #Gets IP info
     iface = netifaces.gateways()['default'][netifaces.AF_INET]
-    networkInfo[3] = iface[0]
-    networkInfo[2] = netifaces.ifaddresses(iface[1])[netifaces.AF_INET][0]['addr']
-    networkInfo[4] = netifaces.ifaddresses(iface[1])[2][0]['netmask']
+    networkInfo[3] = iface[0] #Gateway
+    networkInfo[2] = netifaces.ifaddresses(iface[1])[netifaces.AF_INET][0]['addr'] #IP address
+    networkInfo[4] = netifaces.ifaddresses(iface[1])[2][0]['netmask'] #Netmask
 
     #Get DNS info
     DNSservers = dns.resolver.Resolver().nameservers
-    networkInfo[5] = DNSservers[0]
-    networkInfo[6] = DNSservers[1]
+    networkInfo[5] = DNSservers[0] #Primary DNS
+    networkInfo[6] = DNSservers[1] #Secondary DNE
 
 
 def get_os_info(OSInfo:list) -> None:
@@ -50,7 +50,7 @@ def get_hardware_info(hardwareInfo:list) -> None:
     hardwareInfo[5] = psutil.cpu_count(logical=False)
 
     #Get RAM info
-    ramMemory = psutil.virtual_memory()
+    ramMemory = psutil.virtual_memory() #Does not include SWAP
     hardwareInfo[6] = round(ramMemory.total / (1024**3))
     hardwareInfo[7] = round(ramMemory.available / (1024**3))
 
@@ -102,7 +102,10 @@ def main():
     get_hardware_info(hardwareInfo)
 
     output = format_output(networkInfo,OSInfo,hardwareInfo)
+
+    #Print output
     print(output)
+
     #Write to file
     home = os.path.expanduser("~")
     filename = networkInfo[0]+"_system_report.log"
