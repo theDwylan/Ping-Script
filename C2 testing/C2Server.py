@@ -3,7 +3,7 @@ from socket import socket
 import threading
 import time
 
-#TODO look into multiple sources. Convert main binary list to dict with ip/binary pairs?
+#TODO develop better methods of tracking hosts to account for non-static ip's
 
 EOF = False
 LOCK = threading.Lock()
@@ -17,7 +17,7 @@ HOST = "127.0.0.1"
 
 
 #Determines state of client
-def recv_client_list(clientAddr,BinaryDict:dict): #Multi-threaded
+def recv_client_list(clientAddr,BinaryDict:dict):
     global LISTLOCK
     global HOSTDICT
     global HOSTLOG
@@ -33,7 +33,7 @@ def recv_client_list(clientAddr,BinaryDict:dict): #Multi-threaded
 
 
 #Thread function
-def handle_UDP(UDPsock:socket,BinaryDict:dict): #TODO update BinaryHolder handler
+def handle_UDP(UDPsock:socket,BinaryDict:dict):
     global EOF
     global LOCK
     while True:
@@ -52,7 +52,7 @@ def handle_UDP(UDPsock:socket,BinaryDict:dict): #TODO update BinaryHolder handle
 
 
 #Thread function
-def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list): #TODO update BinaryHolder handler
+def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list):
     global EOF
     global LOCK
     while True:
@@ -86,7 +86,7 @@ def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list): #TODO update Binar
 def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
     global HOSTLOG
     BinaryDict = dict()
-    senderIp = [] #holds the ip of message sender TODO check if obsolete?
+    senderIp = []
 
     #This is receiving data
     udp_Thread = threading.Thread(target=handle_UDP,args=(serverSocketUDP,BinaryDict)) #Handles ones
