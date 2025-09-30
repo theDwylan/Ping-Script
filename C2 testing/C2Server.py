@@ -102,7 +102,7 @@ def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
         output = decode(BinaryDict[messageIp]) #TODO make multi host friendly
         BinaryDict[messageIp] = []
         if output != "":
-            HOSTLOG[messageIp] += output
+            HOSTLOG[messageIp] += output+"\n"
         MESSAGEEVENT.clear()
 
 
