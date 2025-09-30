@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #Dylan Aguirre, 9/29/25
 
-import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil
+import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil #netifaces, dns.resolver, and psutil need pip install
 from datetime import date
 
 def make_date_line()->str: #Assembles a clean formatted string
