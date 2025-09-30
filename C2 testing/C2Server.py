@@ -4,6 +4,7 @@ import threading
 import time
 
 #TODO look into multiple sources. Convert main binary list to dict with ip/binary pairs?
+#TODO add logging for each client instead of cluttering main terminal
 
 EOF = False
 LOCK = threading.Lock()
