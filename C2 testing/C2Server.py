@@ -17,7 +17,7 @@ HOST = "127.0.0.1"
 
 
 #Determines state of client
-def recv_client_list(clientAddr,BinaryDict:dict):
+def recv_client_list(clientAddr:tuple,BinaryDict:dict)->None:
     global LISTLOCK
     global HOSTDICT
     global HOSTLOG
@@ -33,7 +33,7 @@ def recv_client_list(clientAddr,BinaryDict:dict):
 
 
 #Thread function
-def handle_UDP(UDPsock:socket,BinaryDict:dict):
+def handle_UDP(UDPsock:socket,BinaryDict:dict)->None:
     global EOF
     global LOCK
     while True:
@@ -52,7 +52,7 @@ def handle_UDP(UDPsock:socket,BinaryDict:dict):
 
 
 #Thread function
-def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list):
+def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list)->None:
     global EOF
     global LOCK
     while True:
@@ -83,7 +83,7 @@ def handle_TCP(TCPsock:socket,BinaryDict:dict,senderIp:list):
 
 
 #Main incoming traffic handler
-def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
+def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket)->None:
     global HOSTLOG
     BinaryDict = dict()
     senderIp = []
@@ -107,7 +107,7 @@ def receive_traffic(serverSocketUDP:socket,serverSocketTCP:socket):
 
 
 #Convert the collected binary list into a string
-def decode(BinaryList:list):
+def decode(BinaryList:list)->str:
     message = ""
     binaryString = ""
     for i in range(len(BinaryList)):
@@ -118,7 +118,7 @@ def decode(BinaryList:list):
 
 
 #Fetch queued commands and return
-def send_client_list(clientAddr) -> str: #Multi-threaded
+def send_client_list(clientAddr:str) -> str: #Multi-threaded
     global LISTLOCK
     global HOSTDICT
     with LISTLOCK:
@@ -137,7 +137,7 @@ def build_socket(sockType, host:str, port:int) -> socket:
     return serverSock
 
 
-def receiver_thread():
+def receiver_thread()->None:
     serverSocketTCP = build_socket(Socket.SOCK_STREAM,HOST,PORT)
     serverSocketTCP.listen(5)
     serverSocketUDP = build_socket(Socket.SOCK_DGRAM,HOST,PORT)
@@ -146,7 +146,7 @@ def receiver_thread():
         receive_traffic(serverSocketUDP,serverSocketTCP)
 
 
-def display_options():
+def display_options()->None:
     global HOSTLOG
     ipList = []
     selectedHost = "INVALID"

