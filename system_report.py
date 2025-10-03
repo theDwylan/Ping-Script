@@ -2,8 +2,10 @@
 #Dylan Aguirre, 9/29/25
 
 #shutil,psutil, distro, and dns.resolver were found via google search
-import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil,distro #netifaces, dns.resolver, and psutil need pip install
+#py-cpuinfo (cpuinfo) from google and chatgpt
+import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil,distro,cpuinfo,subprocess #netifaces, dns.resolver, and psutil need pip install
 from datetime import date
+
 
 def make_date_line()->str: #Assembles a clean formatted string
     properDateFormat = ""
@@ -14,7 +16,10 @@ def make_date_line()->str: #Assembles a clean formatted string
 
 def get_network_info(networkInfo:list) -> None:
     #Gets hostname and domain suffix
-    fqdnTokens = socket.getfqdn().split(".")
+    if os.name != 'nt': #The linux case
+        fqdnTokens = subprocess.run("hostname",capture_output=True).split(".")
+    else: #The windows case
+        fqdnTokens = socket.getfqdn().split(".")
     networkInfo[0] = fqdnTokens[0] #Host name
     for i in range(1,len(fqdnTokens)-1): #Rebuilds domain suffix
         networkInfo[1] += fqdnTokens[i]+"."
@@ -50,14 +55,14 @@ def get_hardware_info(hardwareInfo:list) -> None:
     hardwareInfo[2] = str(round((totalDisk-freeDisk) / (1024**3)))+" GB"
 
     #Get CPU info
-    hardwareInfo[3] = platform.processor().split(",")[0]
+    hardwareInfo[3] = cpuinfo.get_cpu_info()["brand_raw"]
     hardwareInfo[4] = psutil.cpu_count(logical=True)
     hardwareInfo[5] = psutil.cpu_count(logical=False)
 
     #Get RAM info
     ramMemory = psutil.virtual_memory() #Does not include SWAP
-    hardwareInfo[6] = round(ramMemory.total / (1024**3))
-    hardwareInfo[7] = round(ramMemory.available / (1024**3))
+    hardwareInfo[6] = str(round(ramMemory.total / (1024**3))) + "GB"
+    hardwareInfo[7] = str(round(ramMemory.available / (1024**3))) + "GB"
 
 
 def format_output(networkInfo:list,OSInfo:list,hardwareInfo:list) -> str:
@@ -94,6 +99,7 @@ Memory Information
 {"Total RAM:":{spacingSize}}{hardwareInfo[6]}
 {"Available RAM:":{spacingSize}}{hardwareInfo[7]}
 """
+
 
 def main():
     #Clear terminal
