@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 #Dylan Aguirre, 9/29/25
 
-import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil #netifaces, dns.resolver, and psutil need pip install
+#shutil,psutil, distro, and dns.resolver were found via google search
+import netifaces,socket,os,platform,dns.resolver,calendar,shutil,psutil,distro #netifaces, dns.resolver, and psutil need pip install
 from datetime import date
 
 def make_date_line()->str: #Assembles a clean formatted string
@@ -32,8 +33,12 @@ def get_network_info(networkInfo:list) -> None:
 
 
 def get_os_info(OSInfo:list) -> None:
-    OSInfo[0] = platform.system() #OS name
-    OSInfo[1] = platform.version() #OS version
+    if os.name == 'nt':
+        OSInfo[0] = platform.system() #OS name
+        OSInfo[1] = platform.version() #OS version
+    else:
+        OSInfo[0] = distro.name(pretty=True) #OS name
+        OSInfo[1] = distro.version(pretty=True) #OS version
     OSInfo[2] = platform.release() #Kernel version
 
 
@@ -61,7 +66,7 @@ def format_output(networkInfo:list,OSInfo:list,hardwareInfo:list) -> str:
 
 Device Information
 {"Hostname:":{spacingSize}}{networkInfo[0]}
-{"Gateway:":{spacingSize}}{networkInfo[1]}
+{"Domain Suffix:":{spacingSize}}{networkInfo[1]}
 
 Network Information
 {"IP address:":{spacingSize}}{networkInfo[2]}
