@@ -17,7 +17,7 @@ def make_date_line()->str: #Assembles a clean formatted string
 def get_network_info(networkInfo:list) -> None:
     #Gets hostname and domain suffix
     if os.name != 'nt': #The linux case
-        fqdnTokens = subprocess.run("hostname",capture_output=True).split(".")
+        fqdnTokens = subprocess.run("hostname",capture_output=True).stdout.decode().split(".")
     else: #The windows case
         fqdnTokens = socket.getfqdn().split(".")
     networkInfo[0] = fqdnTokens[0] #Host name
