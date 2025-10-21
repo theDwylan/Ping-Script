@@ -4,7 +4,7 @@
 import os, pathlib
 
 
-#The find() func was found here 
+#The find() func framework was found here 
 #https://stackoverflow.com/questions/1724693/find-a-file-in-python
 def find(name:str) -> list: 
     if os.name == "nt":
@@ -40,9 +40,9 @@ def create_symlink(userInput:str):
         print("No such filename!")
         return
     
-    if len(options) == 1: #One option thus link
+    if len(options) == 1: #One option
         filepath = options[0]
-    else: #More than one choice
+    else: #More than one option
         filepath = select_option(options)
 
     os.symlink(filepath,pathlib.Path.home())
@@ -51,10 +51,23 @@ def create_symlink(userInput:str):
 
 
 def delete_symlink(userInput:str):
+    #Generate list of all symlinks in home dir
+    #Select symlink
+    #Delete symlink
     pass
 
 
 def symlink_report():
+    #List all files in home dir
+    #Check if each file is a symlink
+    #If symlink, add to list
+    #Return list of symlinks
+    pass
+
+
+def generate_report():
+    #Get report
+    #Print report in nice format
     pass
 
 
