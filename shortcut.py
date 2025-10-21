@@ -19,13 +19,14 @@ def find(name:str) -> list:
     return output
 
 
-def select_option(options:list) -> str: #Selects file from a list of options
+def select_option(options:list, filename:str) -> str: #Selects file from a list of options
     count = 1 #Added 1 for ease of reading
+    print(f'Multiple options for filename "{filename}" were found')
     for option in options: #Display each option
         print(f"[{count}] {option}")
     while True:
         try:
-            userInput = int(input("Choose file: "))
+            userInput = int(input(f"Choose file (1-{count}): "))
         except: #Typo/Wrong input handling
             print("Error! Invalid command")
         if userInput > count: #Out of bounds handling
@@ -43,7 +44,7 @@ def create_symlink(userInput:str):
     if len(options) == 1: #One option
         filepath = options[0]
     else: #More than one option
-        filepath = select_option(options)
+        filepath = select_option(options,userInput)
 
     os.symlink(filepath,pathlib.Path.home())
     print(filepath+" is linked to "+str(pathlib.Path.home()))
@@ -57,12 +58,13 @@ def delete_symlink(userInput:str):
     pass
 
 
-def symlink_report():
+def symlink_report() -> list:
+    symList = []
     #List all files in home dir
     #Check if each file is a symlink
     #If symlink, add to list
     #Return list of symlinks
-    pass
+    return symList
 
 
 def generate_report():
