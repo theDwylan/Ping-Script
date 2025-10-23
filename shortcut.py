@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #Dylan Aguirre, 10/21/25
 
-import os, pathlib
+import os, pathlib, subprocess
 
 
 #The find() func framework was found here 
@@ -35,7 +35,7 @@ def select_option(options:list, filename:str) -> str: #Selects file from a list 
             return options[userInput-1]
 
 
-def create_symlink(userInput:str):
+def create_symlink(userInput:str,homeDesktop:str) -> None:
     options = find(userInput)
     if len(options) == 0: #No results returned
         print("No such filename!")
@@ -46,56 +46,72 @@ def create_symlink(userInput:str):
     else: #More than one option
         filepath = select_option(options,userInput)
 
-    os.symlink(filepath,pathlib.Path.home())
-    print(filepath+" is linked to "+str(pathlib.Path.home()))
+    os.symlink(filepath,homeDesktop)
+    print(filepath+" is linked to "+homeDesktop)
 
 
 
-def delete_symlink(userInput:str):
+def delete_symlink(homeDesktop:str):
+    count = 1 #Starts at one for clarity of user
     #Generate list of all symlinks in home dir
+    symLinks = symlink_report(homeDesktop)
+    for line in symLinks:
+        line = line.split()
+        print(count+line[len(line)-1])
+        count += 1
     #Select symlink
+    userInput = int(input("Select symlink to delete (1-"+str(len(symLinks))+")"))-1
     #Delete symlink
+    lineTokens = symLinks[userInput].split()
+    os.remove(homeDesktop+lineTokens[len(lineTokens)-1])
     pass
 
 
-def symlink_report() -> list:
+def symlink_report(homeDesktop:str) -> list:
     symList = []
     #List all files in home dir
+    lsOutput = subprocess.run(["ls","-la",homeDesktop], capture_output=True).stdout.decode()
     #Check if each file is a symlink
-    #If symlink, add to list
+    for line in lsOutput.strip().split("\n"):
+        #If symlink, add to list
+        if "->" in line:
+            symList.append(line)
     #Return list of symlinks
     return symList
 
 
-def generate_report():
+def generate_report(homeDesktop:str) -> None:
     #Get report
+    symList = symlink_report(homeDesktop)
     #Print report in nice format
-    pass
+    for line in symList:
+        print(line)
+    print("Total symlinks = "+str(len(symList)))
 
 
 def main():
-    while True:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print(os.getcwd())
-        try:
-            userInput = int(input("[1] Create Symbolic Link\n[2] Delete Symbolic Link\n[3] Generate Symbolic Link report\n[4] Quit\n>: "))
-        except:
-            print("Error! invalid selection")
+    homeDesktop = str(pathlib.Path.home())+ ("\\Desktop\\" if os.name == 'nt' else "/Desktop/")
+    delete_symlink(homeDesktop)
+    # while True:
+    #     os.system('cls' if os.name == 'nt' else 'clear')
+    #     print(os.getcwd())
+    #     try:
+    #         userInput = int(input("[1] Create Symbolic Link\n[2] Delete Symbolic Link\n[3] Generate Symbolic Link report\n[4] Quit\n>: "))
+    #     except:
+    #         print("Error! invalid selection")
 
-        if userInput == 1 or userInput == 2:
-            fileInput = input("Enter filename to link: ")
+    #     if userInput == 1: #Create symlink
+    #         fileInput = input("Enter filename to link: ")
+    #         create_symlink(fileInput,homeDesktop)
+    #     elif userInput == 2: #Delete symlink
+    #         delete_symlink(homeDesktop)
+    #     elif userInput == 3: #symlink report
+    #         generate_report(homeDesktop)
+    #     elif userInput == 4: #Quit
+    #         break
+    #     else: #Number out of range
+    #         print("Error! invalid selection")
 
-        if userInput == 1: #Create symlink
-            create_symlink(fileInput)
-        elif userInput == 2: #Delete symlink
-            pass
-        elif userInput == 3: #symlink report
-            pass
-        elif userInput == 4: #Quit
-            break
-        else: #Number out of range
-            print("Error! invalid selection")
-
-        input("Press enter to continue...")
+    #     input("Press enter to continue...")
 
 main()
