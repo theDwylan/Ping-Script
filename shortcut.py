@@ -24,6 +24,8 @@ def select_option(options:list, filename:str) -> str: #Selects file from a list 
     print(f'Multiple options for filename "{filename}" were found')
     for option in options: #Display each option
         print(f"[{count}] {option}")
+        count += 1
+    count -= 1 #Correcting for last loop
     while True:
         try:
             userInput = int(input(f"Choose file (1-{count}): "))
@@ -46,7 +48,7 @@ def create_symlink(userInput:str,homeDesktop:str) -> None:
     else: #More than one option
         filepath = select_option(options,userInput)
 
-    os.symlink(filepath,homeDesktop)
+    os.symlink(filepath,homeDesktop+userInput)
     print(filepath+" is linked to "+homeDesktop)
 
 
@@ -57,13 +59,13 @@ def delete_symlink(homeDesktop:str):
     symLinks = symlink_report(homeDesktop)
     for line in symLinks:
         line = line.split()
-        print(count+line[len(line)-1])
+        print(str(count)+line[len(line)-1])
         count += 1
     #Select symlink
-    userInput = int(input("Select symlink to delete (1-"+str(len(symLinks))+")"))-1
+    userInput = int(input("Select symlink to delete (1-"+str(len(symLinks))+"): "))-1
     #Delete symlink
     lineTokens = symLinks[userInput].split()
-    os.remove(homeDesktop+lineTokens[len(lineTokens)-1])
+    os.remove(homeDesktop+lineTokens[len(lineTokens)-3])
     pass
 
 
