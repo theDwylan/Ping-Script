@@ -91,27 +91,26 @@ def generate_report(homeDesktop:str) -> None:
 
 def main():
     homeDesktop = str(pathlib.Path.home())+ ("\\Desktop\\" if os.name == 'nt' else "/Desktop/")
-    delete_symlink(homeDesktop)
-    # while True:
-    #     os.system('cls' if os.name == 'nt' else 'clear')
-    #     print(os.getcwd())
-    #     try:
-    #         userInput = int(input("[1] Create Symbolic Link\n[2] Delete Symbolic Link\n[3] Generate Symbolic Link report\n[4] Quit\n>: "))
-    #     except:
-    #         print("Error! invalid selection")
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(os.getcwd())
+        try:
+            userInput = int(input("[1] Create Symbolic Link\n[2] Delete Symbolic Link\n[3] Generate Symbolic Link report\n[4] Quit\n>: "))
+        except:
+            print("Error! invalid selection")
 
-    #     if userInput == 1: #Create symlink
-    #         fileInput = input("Enter filename to link: ")
-    #         create_symlink(fileInput,homeDesktop)
-    #     elif userInput == 2: #Delete symlink
-    #         delete_symlink(homeDesktop)
-    #     elif userInput == 3: #symlink report
-    #         generate_report(homeDesktop)
-    #     elif userInput == 4: #Quit
-    #         break
-    #     else: #Number out of range
-    #         print("Error! invalid selection")
+        if userInput == 1: #Create symlink
+            fileInput = input("Enter filename to link: ")
+            create_symlink(fileInput,homeDesktop)
+        elif userInput == 2: #Delete symlink
+            delete_symlink(homeDesktop)
+        elif userInput == 3: #symlink report
+            generate_report(homeDesktop)
+        elif userInput == 4: #Quit
+            break
+        else: #Number out of range
+            print("Error! invalid selection")
 
-    #     input("Press enter to continue...")
+        input("Press enter to continue...")
 
 main()
